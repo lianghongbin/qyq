@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+
+
+             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <context:property-placeholder ignore-unresolvable="true"/>
+    <context:property-placeholder order="0" ignore-unresolvable="true"
+                                  location="classpath:consumer.properties,producer.properties"/>
+
+    <context:component-scan base-package="com.jingoal.qyq"/>
+
+    <!-- 配置线程池 -->
+    <bean id ="executor"  class ="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor" >
+        <!-- 线程池维护线程的最少数量 -->
+        <property name ="corePoolSize" value ="5" />
+        <!-- 线程池维护线程所允许的空闲时间 -->
+        <property name ="keepAliveSeconds" value ="30000" />
+        <!-- 线程池维护线程的最大数量 -->
+        <property name ="maxPoolSize" value ="50" />
+        <!-- 线程池所使用的缓冲队列 -->
+        <property name ="queueCapacity" value ="20" />
+    </bean>
+
+    <bean id="kafkaSystemProducer" class="org.apache.kafka.clients.producer.KafkaProducer">
+        <constructor-arg name="properties">
+            <props>
+                <prop key="zookeeper.connect">${zookeeper.connect}</prop>
+                <prop key="serializer.class">${serializer.class}</prop>
+                <prop key="metadata.broker.list">${metadata.broker.list}</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+
+    <bean id="kafkaConsumerConfig" class="kafka.consumer.ConsumerConfig">
+        <constructor-arg name="originalProps">
+            <props>
+                <prop key="zookeeper.connect">${zookeeper.connect}</prop>
+                <prop key="zookeeper.session.timeout.ms">${zookeeper.session.timeout.ms}</prop>
+                <prop key="zookeeper.sync.time.ms">${zookeeper.sync.time.ms}</prop>
+                <prop key="auto.commit.interval.ms">${auto.commit.interval.ms}</prop>
+            </props>
+        </constructor-arg>
+    </bean>
+
+    <bean id="generalMessageListener" class="com.jingoal.qyq.common.queue.kafka.GeneralMessageListener" scope="prototype"/>
+
+    <bean id="consumerGroup" class="com.jingoal.qyq.common.queue.kafka.KafkaConsumerGroup">
+        <constructor-arg name="consumerConfig" ref="kafkaConsumerConfig"/>
+        <constructor-arg name="topic" value="my-topic"/>
+        <property name="listeners">
+            <list>
+                <ref bean="generalMessageListener"/>
+                <ref bean="generalMessageListener"/>
+                <ref bean="generalMessageListener"/>
+                <ref bean="generalMessageListener"/>
+            </list>
+        </property>
+    </bean>
+</beans>

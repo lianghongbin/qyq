@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+
+
+             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:property-placeholder  ignore-unresolvable="true"/>
+	<context:property-placeholder order="0" ignore-unresolvable="true"
+								  location="classpath:redis.properties" />
+
+	<context:component-scan base-package="com.jingoal.qyq"/>
+
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="${redis.maxTotal}"></property>
+		<property name="maxIdle" value="${redis.maxIdle}" />
+		<property name="maxWaitMillis" value="${redis.maxWait}" />
+		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
+	</bean>
+
+	<bean id="jedisSentinelPool" class="redis.clients.jedis.JedisSentinelPool">
+		<constructor-arg index="0" value="mymaster" />
+		<constructor-arg index="1">
+			<set>
+				<value>localhost:6379</value>
+			</set>
+		</constructor-arg>
+		<constructor-arg index="2" ref="poolConfig" />
+	</bean>
+
+	<bean id="attentionMessageListener" class="com.jingoal.qyq.common.queue.redis.AttentionMessageListener"/>
+
+	<bean id="serializer" class="com.jingoal.qyq.common.HessianSerializer"/>
+
+	<bean id="messageDispatcher" class="com.jingoal.qyq.common.queue.redis.RedisMessageDispatcher" init-method="start" destroy-method="shutdown">
+		<property name="listeners">
+			<list>
+				<ref bean="attentionMessageListener"/>
+			</list>
+		</property>
+		<property name="serializer" ref="serializer"/>
+		<!--
+		<property name="executor" ref="**"/>
+		-->
+	</bean>
+
+	<bean id="producer" class="com.jingoal.qyq.common.queue.redis.DefaultRedisProducer">
+		<property name="serializer" ref="serializer"/>
+		<property name="jedisSentinelPool" ref="jedisSentinelPool"/>
+	</bean>
+</beans>
