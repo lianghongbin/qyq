@@ -30,12 +30,10 @@ public class KafkaConsumerGroup {
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerGroup.class);
 
     public KafkaConsumerGroup(String topic, ConsumerConfig consumerConfig) {
+        logger.info("开始初始化 KafkaConsumerGroup ......");
         this.consumer = kafka.consumer.Consumer.createJavaConsumerConnector(consumerConfig);
         this.topic = topic;
-    }
-
-    public void setExecutor(ExecutorService executor) {
-        this.executor = executor;
+        logger.info("KafkaConsumerGroup 初始化完成!");
     }
 
     public void setListeners(List<MessageListener<KafkaMessage<String>>> listeners) {

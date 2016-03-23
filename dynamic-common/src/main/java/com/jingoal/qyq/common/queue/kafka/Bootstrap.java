@@ -19,7 +19,7 @@ public class Bootstrap {
         ApplicationContext context = new ClassPathXmlApplicationContext("spring-kafka.xml");
         consumerGroup = context.getBean("consumerGroup", KafkaConsumerGroup.class);
 
-        logger.info("初始化消息者环境完成!");
+        logger.info("初始化消费者环境完成!");
 
         logger.info("消费者开始监听队列......");
         consumerGroup.start();
@@ -33,6 +33,5 @@ public class Bootstrap {
         Bootstrap bootstrap = new Bootstrap();
 
         bootstrap.start();
-        bootstrap.stop();
     }
 }

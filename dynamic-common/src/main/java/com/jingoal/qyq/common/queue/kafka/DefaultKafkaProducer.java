@@ -40,6 +40,7 @@ public class DefaultKafkaProducer<V extends Serializable> implements KafkaProduc
         } catch (Exception e) {
             logger.error("", e);
         }
+
         logger.debug("end close producer.");
     }
 
@@ -48,7 +49,7 @@ public class DefaultKafkaProducer<V extends Serializable> implements KafkaProduc
         producer.send(producerRecord);
     }
 
-    public void send(KafkaMessage<V> message) throws MessageException {
+    public void send(KafkaMessage<V> message) {
         final ProducerRecord<String, V> record = new ProducerRecord<String, V>(message.key(), message.getPayload());
         producer.send(record, new Callback() {
             public void onCompletion(RecordMetadata metadata, Exception exception) {

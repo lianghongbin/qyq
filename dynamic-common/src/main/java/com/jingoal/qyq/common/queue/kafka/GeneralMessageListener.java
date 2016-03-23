@@ -15,6 +15,7 @@ public class GeneralMessageListener<K extends KafkaMessage<String>> implements M
     private static final Logger logger = LoggerFactory.getLogger(GeneralMessageListener.class);
 
     public void onMessage(K message) {
+        logger.info("收到一个消息:{}", message.getPayload());
         if (!message.key().equalsIgnoreCase("my-topic")) {  //如果不是my-topic这个主题队列,不做处理
             return;
         }

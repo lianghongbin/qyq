@@ -7,4 +7,5 @@ package com.jingoal.qyq.common;
 public interface Constants {
 
     String FEED_INBOX_KEY_PREFIX = "feed_inbox_";
+    String FEED_OUTBOX_KEY_PREFIX = "feed_outbox_";
 }

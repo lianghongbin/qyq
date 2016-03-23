@@ -9,6 +9,7 @@ public class Feed implements Keyable {
     private static final long serialVersionUID = 1L;
     private long id;
     private long time;
+    private long cid;
     private String content;
 
     public String key() {
@@ -33,6 +34,14 @@ public class Feed implements Keyable {
 
     public void setTime(long time) {
         this.time = time;
+    }
+
+    public long getCid() {
+        return cid;
+    }
+
+    public void setCid(long cid) {
+        this.cid = cid;
     }
 
     public String getContent() {

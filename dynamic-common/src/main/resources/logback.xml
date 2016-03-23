@@ -24,7 +24,7 @@
 	</appender>
 	<appender name="infolog" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
-			<level>INFO</level>
+			<level>DEBUG</level>
 			<onMatch>ACCEPT</onMatch>
 			<onMismatch>DENY</onMismatch>
 	    </filter>          
@@ -39,7 +39,7 @@
 	</appender>
 	<appender name="warnlog" class="ch.qos.logback.core.rolling.RollingFileAppender">
     	<filter class="ch.qos.logback.classic.filter.LevelFilter">
-			<level>WARN</level>
+			<level>DEBUG</level>
 			<onMatch>ACCEPT</onMatch>
 			<onMismatch>DENY</onMismatch>
  		</filter>          
@@ -80,7 +80,7 @@
 	    </appender>
 	
 	<root level="warn">
-		<!--<appender-ref ref="stdout" />-->
+		<appender-ref ref="stdout" />
 		<appender-ref ref="debuglog" />		
 		<appender-ref ref="infolog" />		
 		<appender-ref ref="warnlog" />
@@ -91,7 +91,7 @@
 	<logger name="org.apache.ibatis" level="error"/>
 	<logger name="java.sql" level="error"/>
 	<logger name="org.springframework" level="error"/>
-	
+
 	<!--  
 	<logger name="org.springframework" level="ERROR" />
 	<logger name="com.ibatis" level="WARN" />
