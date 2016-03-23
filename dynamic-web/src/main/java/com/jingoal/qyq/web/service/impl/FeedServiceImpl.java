@@ -5,8 +5,11 @@ import com.jingoal.qyq.common.Feed;
 import com.jingoal.qyq.web.service.FeedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Pipeline;
 
@@ -20,8 +23,8 @@ import java.util.*;
 @Service
 public class FeedServiceImpl implements FeedService {
 
-    @Resource
-    private JedisSentinelPool jedisSentinelPool;
+    @Autowired
+    private JedisPool jedisSentinelPool;
     private static final Logger logger = LoggerFactory.getLogger(FeedServiceImpl.class);
 
     /**
@@ -155,7 +158,7 @@ public class FeedServiceImpl implements FeedService {
 
             List<Long> ids = new ArrayList<Long>(feeds.size());
             for (Object f : feeds) {
-                ids.add((Long) f);
+                ids.addAll((Set) f);
             }
 
             return ids;

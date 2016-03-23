@@ -21,7 +21,8 @@
 		<property name="testOnBorrow" value="${redis.testOnBorrow}" />
 	</bean>
 
-	<bean id="redisSentinel" class="redis.clients.jedis.JedisSentinelPool">
+	<!--
+	<bean id="jedisSentinelPool" class="redis.clients.jedis.JedisSentinelPool">
 		<constructor-arg index="0" value="mymaster" />
 		<constructor-arg index="1">
 			<set>
@@ -30,6 +31,14 @@
 		</constructor-arg>
 		<constructor-arg index="2" ref="poolConfig" />
 	</bean>
+	-->
+
+	<bean id="jedisSentinelPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg name="host" value="127.0.0.1"/>
+		<constructor-arg name="port" value="6379"/>
+	</bean>
+
+	<!--
 
 	<bean id="attentionMessageListener" class="com.jingoal.qyq.common.queue.redis.AttentionMessageListener"/>
 
@@ -40,4 +49,5 @@
 			</list>
 		</property>
 	</bean>
+	-->
 </beans>
