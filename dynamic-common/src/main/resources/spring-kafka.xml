@@ -2,12 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:util="http://www.springframework.org/schema/util"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans.xsd
-
-
-             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder ignore-unresolvable="true"/>
     <context:property-placeholder order="0" ignore-unresolvable="true"
@@ -33,6 +30,7 @@
                 <prop key="acks">${acks}</prop>
                 <prop key="bootstrap.servers">${bootstrap.servers}</prop>
                 <prop key="buffer.memory">${buffer.memory}</prop>
+                <prop key="topic.prefix">${topic.prefix}</prop>
                 <prop key="key.serializer">${key.serializer}</prop>
                 <prop key="value.serializer">${value.serializer}</prop>
             </props>
@@ -48,8 +46,9 @@
         <property name="properties">
             <props>
                 <prop key="group.id">${group.id}</prop>
+                <prop key="topic.prefix">${topic.prefix}</prop>
                 <prop key="zookeeper.connect">${zookeeper.connect}</prop>
-                <prop key="zookeeper.session.timeout.ms">${consumer.zookeeper.session.timeout.ms}</prop>
+                <prop key="zookeeper.session.timeout.ms">${zookeeper.session.timeout.ms}</prop>
                 <prop key="fetch.message.max.bytes">${fetch.message.max.bytes}</prop>
                 <prop key="socket.receive.buffer.bytes">${socket.receive.buffer.bytes}</prop>
                 <prop key="num.consumer.fetchers">${num.consumer.fetchers}</prop>

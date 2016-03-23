@@ -6,14 +6,16 @@ package com.jingoal.qyq.common.queue.kafka;
  */
 
 import com.jingoal.qyq.common.queue.MessageListener;
-
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
+import kafka.consumer.ConsumerTimeoutException;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
+import kafka.message.MessageAndMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,6 @@ public class KafkaConsumerGroup {
     private final ConsumerConnector consumer;
     private final String topic;
     private ExecutorService executor;
-    private int index = 0;
     private List<MessageListener<KafkaMessage<String>>> listeners;
     private static final Logger logger = LoggerFactory.getLogger(KafkaConsumerGroup.class);
 
@@ -62,23 +63,71 @@ public class KafkaConsumerGroup {
         Map<String, List<KafkaStream<byte[], byte[]>>> consumerMap = consumer.createMessageStreams(topicCountMap);
         List<KafkaStream<byte[], byte[]>> streams = consumerMap.get(topic);
         executor = Executors.newFixedThreadPool(listeners.size());
-        index = 0;
-        // now create an object to consume the messages
-        for (final KafkaStream<byte[], byte[]> stream : streams) {
-            executor.submit(new Runnable() {
-                public void run() {
-                    ConsumerIterator<byte[], byte[]> it = stream.iterator();
-                    MessageListener<KafkaMessage<String>> listener = listeners.get(index++);
-                    while (it.hasNext()) {
-                        KafkaMessage<String> message = new KafkaMessage<String>(new String(it.next().message())) {
-                            public String key() {
-                                return topic;
-                            }
-                        } ;
-                        listener.onMessage(message);
+
+        logger.info(Thread.currentThread().getName() + " consumerMap size: " + consumerMap.size());
+
+        for (String topic : consumerMap.keySet()) {
+            List<KafkaStream<byte[], byte[]>> streamList = consumerMap.get(topic);
+
+            logger.info(Thread.currentThread().getName() + " KafkaStream size: " + streamList.size() + ", topic: " + topic);
+            int i = 0;
+            for (final KafkaStream<byte[], byte[]> stream : streamList) {
+                ConsumerTask ct = new ConsumerTask(topic, stream, Thread.currentThread().getName(), i);
+                ct.start();
+                i++;
+            }
+        }
+    }
+
+    public class ConsumerTask extends Thread {
+        private String topic;
+        private KafkaStream<byte[], byte[]> stream;
+        private String consumerName;
+        private int i;
+        private volatile boolean isRunning = true;
+
+        public ConsumerTask(String topic, KafkaStream<byte[], byte[]> stream, String consumerName, int i) {
+            this.topic = topic;
+            this.stream = stream;
+            this.consumerName = consumerName;
+            this.i = i;
+        }
+
+        @Override
+        public void run() {
+            Thread.currentThread().setName(consumerName + "-ConsumerTask-" + i);
+            ConsumerIterator<byte[], byte[]> it = stream.iterator();
+
+            while (isRunning) {
+                try {
+                    if (it.hasNext()) {
+                        MessageAndMetadata<byte[], byte[]> messageAndMeatadata = it.next();
+                        long offset = messageAndMeatadata.offset();
+                        byte[] bs = messageAndMeatadata.message();
+                        try {
+                            MessageListener<KafkaMessage<String>> listener = listeners.get(i);
+                            KafkaMessage<String> message = new KafkaMessage<String>(new String(bs)) {
+                                @Override
+                                public String key() {
+                                    return topic;
+                                }
+                            };
+
+                            listener.onMessage(message);
+                            logger.info(
+                                    Thread.currentThread().getName() + "-offset:" + offset + ", msg: " + new String(bs, "utf-8"));
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
                     }
+                } catch (ConsumerTimeoutException e) {
+                    logger.error("consumer.timeout", e);
                 }
-            });
+            }
+        }
+
+        public void shutdown() {
+            this.isRunning = false;
         }
     }
 }
