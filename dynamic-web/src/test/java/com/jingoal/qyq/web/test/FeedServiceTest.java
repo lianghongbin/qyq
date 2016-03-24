@@ -1,10 +1,11 @@
 package com.jingoal.qyq.web.test;
 
 import com.jingoal.qyq.common.Feed;
+import com.jingoal.qyq.common.Row;
 import com.jingoal.qyq.web.service.FeedService;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -26,14 +27,14 @@ public class FeedServiceTest extends AbstractJUnit4SpringContextTests {
     @Test
     public void addTest() {
         Feed feed = new Feed();
-        feed.setCid(4000);
-        feed.setId(49);
-        feed.setContent("feed-49");
+        feed.setCid(3000);
+        feed.setId(140);
+        feed.setContent("feed-140");
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2015, 4, 28);
+        calendar.set(2015, 12, 12);
         feed.setTime(calendar.getTimeInMillis());
-        feedService.add(feed);
+        feedService.addOutbox(feed);
     }
 
     @Test
@@ -46,7 +47,8 @@ public class FeedServiceTest extends AbstractJUnit4SpringContextTests {
         feed.setContent("feed-8");
 
         Calendar calendar = Calendar.getInstance();
-        calendar.set(2015, 1, 8);
+        calendar.setTime(new Date());
+        calendar.add(Calendar.HOUR, 1);
         feed.setTime(calendar.getTimeInMillis());
 
         feeds.add(feed);
@@ -71,8 +73,24 @@ public class FeedServiceTest extends AbstractJUnit4SpringContextTests {
         ids.add(3000L);
         ids.add(4000L);
 
-        List<Long> result = feedService.batchLoadOutbox(ids, 0, 1000);
+        Set<Row> result = feedService.batchLoadOutbox(ids, 0, 20);
         System.out.println(result.size());
+
+        for (Row row : result) {
+            System.out.println(row.getScore() + "--" + row.getElement());
+        }
+        Assert.isTrue(result.size() > 0);
+    }
+
+    @Test
+    public void loadOutboxTest() {
+
+        Set<Row> result = feedService.loadOutbox(1000, 0, 2);
+        System.out.println(result.size());
+        for (Row row : result) {
+            System.out.println(row.getScore() + "--" + row.getElement());
+        }
+
         Assert.isTrue(result.size() > 0);
     }
 }
