@@ -76,6 +76,30 @@ public class RedisFeedServiceImpl implements FeedService {
     }
 
     /**
+     * 批量合并
+     *
+     * @param data 合并数据
+     */
+    @Override
+    public void merge(Map<Long, Feed> data) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisSentinelPool.getResource();
+            Pipeline pl = jedis.pipelined();
+            for (Map.Entry<Long, Feed> entry : data.entrySet()) {
+                pl.zadd(Constants.FEED_INBOX_KEY_PREFIX + entry.getKey(), (double) entry.getValue().getTime(), Long.toString(entry.getValue().getId()));
+            }
+
+            pl.sync();
+        } catch (Exception ex) {
+            jedisSentinelPool.returnBrokenResource(jedis);
+            logger.error("error merge error:" + ex.getMessage(), ex);
+        } finally {
+            jedisSentinelPool.returnResource(jedis);
+        }
+    }
+
+    /**
      * feeds 合并到用户 userId的feed流中
      *
      * @param userId 用户ID

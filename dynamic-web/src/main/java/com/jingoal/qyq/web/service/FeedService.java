@@ -4,6 +4,7 @@ import com.jingoal.qyq.common.Feed;
 import com.jingoal.qyq.common.Row;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -25,6 +26,12 @@ public interface FeedService {
      * @param feeds  动态列表
      */
     void merge(long userId, Set<Feed> feeds);
+
+    /**
+     * 批量合并
+     * @param data 合并数据
+     */
+    void merge(Map<Long, Feed> data);
 
     /**
      * feeds 合并到用户 userId的feed流中

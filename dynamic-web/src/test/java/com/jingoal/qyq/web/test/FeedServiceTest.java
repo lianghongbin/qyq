@@ -6,6 +6,7 @@ import com.jingoal.qyq.web.service.FeedService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.SystemProfileValueSource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -92,5 +93,22 @@ public class FeedServiceTest extends AbstractJUnit4SpringContextTests {
         }
 
         Assert.isTrue(result.size() > 0);
+    }
+
+    @Test
+    public void mergeDateTest() {
+
+        long start = new Date().getTime();
+        Map<Long, Feed> data = new HashMap<>(10000);
+        Feed feed = new Feed();
+        feed.setId(1100);
+        feed.setTime(145000000L);
+        for (long i=1;i<10000;i++) {
+            data.put(i, feed);
+        }
+
+        feedService.merge(data);
+
+        System.out.println(new Date().getTime() - start);
     }
 }
