@@ -1,6 +1,5 @@
 package com.jingoal.qyq.common.queue.kafka;
 
-import com.jingoal.qyq.common.exception.MessageException;
 import kafka.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;

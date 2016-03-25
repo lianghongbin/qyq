@@ -32,7 +32,7 @@ public class RedisFeedServiceImpl implements FeedService {
      *
      * @param feed 动态
      */
-    public void addOutbox(Feed feed) {
+    public void add(Feed feed) {
         Jedis jedis = null;
 
         try {
@@ -47,6 +47,84 @@ public class RedisFeedServiceImpl implements FeedService {
         } catch (Exception ex) {
             jedisSentinelPool.returnBrokenResource(jedis);
             logger.error("error[key=" + Constants.FEED_INBOX_KEY_PREFIX + feed.getCid() + "]" + ex.getMessage(), ex);
+        } finally {
+            jedisSentinelPool.returnResource(jedis);
+        }
+    }
+
+    /**
+     * 删除某个动态
+     *
+     * @param feed 动态
+     */
+    @Override
+    public void remove(Feed feed) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisSentinelPool.getResource();
+            Pipeline pl = jedis.pipelined();
+
+            pl.zrem(Constants.FEED_OUTBOX_KEY_PREFIX + feed.getCid(), Long.toString(feed.getId()));
+            pl.zrem(Constants.FEED_INBOX_KEY_PREFIX + feed.getCid(), Long.toString(feed.getId()));
+            pl.sync();
+        } catch (Exception ex) {
+            jedisSentinelPool.returnBrokenResource(jedis);
+            logger.error("error[key=" + Constants.FEED_OUTBOX_KEY_PREFIX + feed.getCid() + "]" + ex.getMessage(), ex);
+        } finally {
+            jedisSentinelPool.returnResource(jedis);
+        }
+    }
+
+    /**
+     * 个人删除某个动态,连同关注人的feed流中一并删除
+     *
+     * @param feed 要删除的动态
+     * @param cIds 个人关注的企业ID列表
+     */
+    @Override
+    public void removeAndInbox(Feed feed, List<Long> cIds) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisSentinelPool.getResource();
+            Pipeline pl = jedis.pipelined();
+
+            pl.zrem(Constants.FEED_OUTBOX_KEY_PREFIX + feed.getCid(), Long.toString(feed.getId()));
+            pl.zrem(Constants.FEED_INBOX_KEY_PREFIX + feed.getCid(), Long.toString(feed.getId()));
+
+            for (Long cId : cIds) {
+                pl.zrem(Constants.FEED_INBOX_KEY_PREFIX + cId, Long.toString(feed.getId()));
+            }
+
+            pl.sync();
+        } catch (Exception ex) {
+            jedisSentinelPool.returnBrokenResource(jedis);
+            logger.error("error " + ex.getMessage(), ex);
+        } finally {
+            jedisSentinelPool.returnResource(jedis);
+        }
+    }
+
+    /**
+     * 取消关注某人时,将该用户feed流中的动态全部删除
+     *
+     * @param cId   取消关注的人的ID
+     * @param feeds 需要删除的动态列表
+     */
+    @Override
+    public void removeFromInbox(long cId, List<Feed> feeds) {
+        Jedis jedis = null;
+        try {
+            jedis = jedisSentinelPool.getResource();
+            Pipeline pl = jedis.pipelined();
+
+            for (Feed feed : feeds) {
+                pl.zrem(Constants.FEED_INBOX_KEY_PREFIX + cId, Long.toString(feed.getId()));
+            }
+
+            pl.sync();
+        } catch (Exception ex) {
+            jedisSentinelPool.returnBrokenResource(jedis);
+            logger.error("error[key=" + Constants.FEED_INBOX_KEY_PREFIX + cId + "]" + ex.getMessage(), ex);
         } finally {
             jedisSentinelPool.returnResource(jedis);
         }

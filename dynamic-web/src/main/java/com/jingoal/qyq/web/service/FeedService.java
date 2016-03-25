@@ -15,9 +15,32 @@ public interface FeedService {
 
     /**
      * 发布一个feed 动态
+     *
      * @param feed 动态
      */
-    void addOutbox(Feed feed);
+    void add(Feed feed);
+
+    /**
+     * 个人删除某个动态
+     *
+     * @param feed 动态
+     */
+    void remove(Feed feed);
+
+    /**
+     * 个人删除某个动态,连同关注人的feed流中一并删除
+     *
+     * @param feed 要删除的动态
+     * @param cIds 个人关注的企业ID列表
+     */
+    void removeAndInbox(Feed feed, List<Long> cIds);
+
+    /**
+     * 取消关注某人时,将该用户feed流中的动态全部删除
+     * @param cId 取消关注的人的ID
+     * @param feeds 需要删除的动态列表
+     */
+    void removeFromInbox(long cId, List<Feed> feeds);
 
     /**
      * feeds 批量合并到用户 userId的feed流中
@@ -29,6 +52,7 @@ public interface FeedService {
 
     /**
      * 批量合并
+     *
      * @param data 合并数据
      */
     void merge(Map<Long, Feed> data);
@@ -54,7 +78,7 @@ public interface FeedService {
     /**
      * 根据用户 userId列表, 批量获取该用户发的所有动态列表
      *
-     * @param userIds    用户ID 列表
+     * @param userIds   用户ID 列表
      * @param timestamp 时间戳,如果从最新的获取, 此值为0
      * @param size      每人获取的条数
      * @return feed流ID列表
